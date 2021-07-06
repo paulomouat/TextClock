@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!-- 
+    ’ &#8217;
+-->
+<html>
+    <style>
+    p {
+        font-family: "Myriad Pro", Helvetica, Sans-Serif;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 50pt;
+    }        
+    </style>
+<body>
+
+<p id="demo"></p>
+<p id="debug"></p>
+
+<script>
+    var debugging = true;
+    var hoursStrings = ["twelve", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"];
+    var quartersStrings = ["o&#8217;clock", "a quarter past", "half past", "a quarter to"];
+    var midBandStart = 6;
+    var midBandEnd = 9;
+    var minutesRanges = [
+        [[0, 0], [""]],
+        [[1, 2], ["just after", "just past"]],
+        [[3, midBandStart - 1], ["a few minutes after", "a little after"]],
+        [[midBandStart, midBandEnd], ["after", "past"]],
+        [[midBandEnd + 1, 12], ["nearly", "a few minutes before"]],
+        [[13, 14], ["very nearly", "almost"]],
+        ];
+    var minutesStrings = getMinutesStrings(minutesRanges);
+
+    var date = new Date();
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+
+    var text = getText(hours, minutes);
+    print(text);
+
+    if (debugging) {
+        for(var i = 0; i < 90; i++)
+        {
+            var h = (i + 5) % 24;
+            var m = i % 60;
+            debug(h + ":" + m + " " + getText(h, m));
+        }
+    }
+
+    function getText(hours, minutes) {
+        var referenceHours = hours;
+        var quarter = getQuarter(minutes);
+        var referenceQuarter = quarter;
+        var minutesInQuarter = minutes % 15;
+
+        if (minutesInQuarter > midBandEnd) {
+            referenceQuarter++;
+        }
+
+        if (quarter === 3 || referenceQuarter === 3) {
+            referenceHours++;
+        }
+
+        var text = "it&#8217;s ";
+        var minutesText = minutesStrings[minutesInQuarter];
+
+        if (quarter === 3 && minutesInQuarter > midBandEnd) {
+            text += minutesText + " " + getHoursText(referenceHours);
+            if (hours > 0) {
+                text += " " + getQuarterText(referenceQuarter);
+            } 
+            return text;
+        }
+
+        if (quarter === 0 && minutesInQuarter === 0) {
+            text += minutesText + " " + getHoursText(referenceHours) + " " + getQuarterText(referenceQuarter);
+            return text;
+        }
+
+        if (quarter === 0 && minutesInQuarter < midBandStart) {
+            text += minutesText + " " + getHoursText(referenceHours);
+            return text;
+        }
+
+        if (quarter === 0 && minutesInQuarter > midBandEnd) {
+            text += minutesText + " " + getQuarterText(referenceQuarter) + " " + getHoursText(referenceHours);
+            return text;
+        }
+
+        if (quarter === 0 && minutesInQuarter >= midBandStart) {
+            text += minutesText + " " + getHoursText(referenceHours);
+            return text;
+        }
+
+        text += minutesText + " " + getQuarterText(referenceQuarter) + " " + getHoursText(referenceHours);
+
+        return text;
+    }
+
+    function getMinutesStrings(mr) {
+        var minutesStrings = {};
+        for(var i = 0; i < mr.length; i++) {
+            var range = mr[i][0];
+            var textOptions = mr[i][1];
+            var lo = range[0];
+            var hi = range[1];
+            var text = textOptions[Math.floor(Math.random() * textOptions.length)];
+            for (var r = lo; r <= hi; r++) {
+                minutesStrings[r] = text;
+            }
+        }
+        return minutesStrings;
+    }
+
+    function getHoursText(hours) {
+        var hoursText = "midnight";
+        if (hours > 0) {
+            hoursText = hoursStrings[hours % 12];
+        }
+        return hoursText;        
+    }
+
+    function getQuarter(minutes) {
+        var quarter = Math.floor(minutes / 15);
+        return quarter;
+    }
+
+    function getNextQuarter(minutes) {
+        var quarter = getQuarter(minutes);
+        var nextQuarter = (quarter + 1) % 4;
+        return nextQuarter;
+    }
+
+    function getQuarterText(quarter) {
+        var q = quarter % 4;
+        var quarterText = quartersStrings[q];
+        return quarterText;
+    }
+
+    function print(text) {
+        document.getElementById("demo").innerHTML = text;
+    }
+
+    function debug(text) {
+        var current = document.getElementById("debug").innerHTML;
+        document.getElementById("debug").innerHTML = current + " " + text + "<br/>";
+    }
+</script>
+
+</body>
+</html>
